@@ -1,6 +1,6 @@
 <!--选择多规格弹层-->
 <template>
-  <view class="more_norm_pop">
+  <view class="more_norm_pop" @click.stop>
     <view class="title">{{ moreNormDishdata.name }}</view>
     <scroll-view class="items_cont" scroll-y="true" scroll-top="0rpx">
       <view class="item_row" v-for="(obj, index) in moreNormdata" :key="index">
@@ -13,7 +13,7 @@
             }"
             v-for="(item, ind) in obj.value"
             :key="ind"
-            @click="checkMoreNormPop(obj.value, item)"
+            @tap="checkMoreNormPop(obj.value, item)"
           >
             {{ item }}
           </view>
@@ -26,12 +26,12 @@
         {{ moreNormDishdata.price }}
       </view>
       <view class="active"
-        ><view class="dish_card_add" @click="addShop(moreNormDishdata, '普通')"
+        ><view class="dish_card_add" @tap="addShop(moreNormDishdata)"
           >加入购物车</view
         ></view
       >
     </view>
-    <view class="close" @click="closeMoreNorm(moreNormDishdata)"
+    <view class="close" @tap="closeMoreNorm(moreNormDishdata)"
       ><image
         class="close_img"
         src="../../../static/but_close.png"
@@ -74,31 +74,41 @@ export default {
 </script>
 <style lang="scss" scoped>
 .more_norm_pop {
-  width: calc(100vw - 160rpx);
+  width: calc(100vw - 120rpx);
+  max-height: 80vh;
   box-sizing: border-box;
-  position: relative;
+  position: fixed;
   top: 50%;
   left: 50%;
-  padding: 40rpx;
   transform: translateX(-50%) translateY(-50%);
   background: #fff;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
+  z-index: 10000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   .div_big_image {
     width: 100%;
     border-radius: 10rpx;
   }
   .title {
-    font-size: 40rpx;
-    line-height: 80rpx;
-    text-align: center;
-    font-weight: bold;
+    font-size: 36rpx;
+    line-height: 60rpx;
+    text-align: left;
+    font-weight: 700;
+    color: #1a1a1a;
+    padding: 32rpx 32rpx 16rpx;
   }
   .items_cont {
-    display: flex;
-    flex-wrap: wrap;
-    margin-left: -14rpx;
-    max-height: 50vh;
+    flex: 1;
+    min-height: 0;
+    display: block;
+    padding: 0 32rpx;
+    box-sizing: border-box;
     .item_row {
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 20rpx;
       .flavor_name {
         height: 40rpx;
         opacity: 1;
@@ -138,62 +148,62 @@ export default {
   .but_item {
     display: flex;
     position: relative;
-    flex: 1;
-    padding-left: 10rpx;
-    margin: 34rpx 0 -20rpx 0;
+    align-items: center;
+    padding: 20rpx 32rpx;
+    border-top: 1rpx solid #f0f0f0;
+    flex-shrink: 0;
     .price {
+      flex: 1;
       text-align: left;
       color: #e94e3c;
-      line-height: 88rpx;
-      box-sizing: border-box;
-      font-size: 48rpx;
+      font-size: 44rpx;
       font-family: DIN, DIN-Medium;
-      font-weight: 500;
+      font-weight: 700;
       .ico {
-        font-size: 28rpx;
+        font-size: 26rpx;
       }
     }
     .active {
-      position: absolute;
-      right: 0rpx;
-      bottom: 20rpx;
+      position: relative;
       display: flex;
+      align-items: center;
       .dish_add,
       .dish_red {
         display: block;
-        width: 72rpx;
-        height: 72rpx;
+        width: 64rpx;
+        height: 64rpx;
       }
       .dish_number {
-        padding: 0 10rpx;
-        line-height: 72rpx;
+        padding: 0 12rpx;
+        line-height: 64rpx;
         font-size: 30rpx;
         font-family: PingFangSC, PingFangSC-Medium;
         font-weight: 500;
+        color: #333;
       }
       .dish_card_add {
         width: 200rpx;
-        height: 60rpx;
-        line-height: 60rpx;
+        height: 72rpx;
+        line-height: 72rpx;
         text-align: center;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 28rpx;
-        opacity: 1;
-        // background: linear-gradient(144deg, #ffda05 18%, #ffb302 80%);
-        background: #ffc200;
-        border-radius: 30rpx;
+        color: #333;
+        background: linear-gradient(135deg, #ffc200 0%, #ffb302 100%);
+        border-radius: 36rpx;
+        box-shadow: 0 4rpx 12rpx rgba(255, 194, 0, 0.35);
       }
     }
   }
 }
 .close {
   position: absolute;
-  bottom: -180rpx;
+  bottom: -120rpx;
   left: 50%;
   transform: translateX(-50%);
   .close_img {
-    width: 88rpx;
-    height: 88rpx;
+    width: 80rpx;
+    height: 80rpx;
   }
 }
 </style>

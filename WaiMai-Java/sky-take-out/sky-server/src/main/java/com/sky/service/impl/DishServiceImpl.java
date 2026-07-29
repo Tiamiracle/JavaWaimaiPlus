@@ -139,15 +139,24 @@ public class DishServiceImpl implements DishService {
 //        根据用户id查询当前用户的订单
         List<Orders> orders = orderMapper.getByUserId(Orders.COMPLETED,userId);
         List<RecommendDishVO> res = null;
-        if(orders==null||orders.size()==0){
-            //        用户没有订单，返回销售量最多的toplimit为推荐菜品
-            res = dishMapper.recommendBySales(Orders.COMPLETED,userId,limit);
-        }else{
+        if(orders!=null&&orders.size()!=0){
             //        用户有订单，协同过滤获取推荐菜品
             res = dishMapper.recommendByCF(Orders.COMPLETED,userId, limit);
+
+        }else{
+            //        用户没有订单，返回销售量最多的toplimit为推荐菜品
+            res = dishMapper.recommendBySales(Orders.COMPLETED,userId,limit);
+        }
+        if(res == null || res.isEmpty()){
+//            冷处理兜底
+            res = dishMapper.recommendBySales(Orders.COMPLETED,userId,limit);
+
         }
         if (res != null && !res.isEmpty()) {
             for (RecommendDishVO dish : res) {
+                List<DishFlavor> flavors = dishFlavorMapper.getByDishId(dish.getId());
+                dish.setFlavors(flavors);
+                //        生成推荐理由
                 String reason = generateReason(dish.getName());
                 dish.setReason(reason);
             }

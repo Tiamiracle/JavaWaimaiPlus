@@ -181,9 +181,49 @@ export default {
 		async getRecommend() {
 			const res = await getRecommendDish({ userId: this.userId })
 			if (res.code === 1) {
-				this.recommendList = res.data
+				// 初始化推荐菜品数据，确保flavors字段存在
+				this.recommendList = res.data.map(dish => ({
+					...dish,
+					flavors: dish.flavors || [],
+					dishNumber: dish.dishNumber || 0
+				}))
 			}
 			console.log('推荐data',res);
+		},
+		// 推荐菜品直接加入购物车（无规格）
+		handleRecommendAdd(dish) {
+			if (dish.type === 2) {
+				// 套餐直接打开详情
+				this.openDetailHandle(dish)
+				return
+			}
+			// 直接调用加菜方法
+			this.dishDetailes = { ...dish, dishNumber: (dish.dishNumber || 0) + 1 }
+			this.addDishAction(this.dishDetailes, '普通')
+			// 更新本地数据
+			dish.dishNumber = (dish.dishNumber || 0) + 1
+			uni.showToast({
+				title: '已加入购物车',
+				icon: 'none',
+				duration: 1000
+			})
+		},
+		// 推荐菜品打开规格选择弹窗（有规格）
+		openSpecPop(dish) {
+			this.flavorDataes.splice(0)
+			this.moreNormDishdata = dish
+			this.dishDetailes = dish
+			this.openDetailPop = false
+			this.openMoreNormPop = true
+			this.moreNormdata = dish.flavors.map((obj) => ({
+				...obj,
+				value: JSON.parse(obj.value),
+			}))
+			this.moreNormdata.forEach((item) => {
+				if (item.value && item.value.length > 0) {
+					this.flavorDataes.push(item.value[0])
+				}
+			})
 		},
 		// 获取用户信息
 		getData() {
@@ -464,25 +504,18 @@ export default {
 			let params = {
 				dishFlavor: dishFlavorDatas,
 			}
-			if (item.type === 1) {
+			// 兼容处理：type可能为undefined，根据字段判断是菜品还是套餐
+			if (item.type === 2 || item.setmealId) {
+				// 套餐
 				params = {
 					...params,
-					dishId: item.id,
+					setmealId: item.id || item.setmealId,
 				}
-			} else if (item.type === 2) {
+			} else if (item.dishId || item.id) {
+				// 菜品
 				params = {
-					setmealId: item.id,
-				}
-			} else if (form === "购物车") {
-				if (item.dishId) {
-					params = {
-						...params,
-						dishId: item.dishId,
-					}
-				} else {
-					params = {
-						setmealId: item.setmealId,
-					}
+					...params,
+					dishId: item.id || item.dishId,
 				}
 			}
 			newAddShoppingCartAdd(params)
@@ -499,6 +532,7 @@ export default {
 		},
 		// 加入购物车
 		addShop(item) {
+			console.log(item)
 			this.dishDetailes = item
 			this.addDishAction(item, "普通")
 		},
@@ -569,6 +603,9 @@ export default {
 		},
 		// 打开菜品牌详情
 		openDetailHandle(item) {
+			if(!item.type){
+				item.type = 1
+			}
 			this.dishDetailes = item
 			if (item.type === 2) {
 				querySetmealDishById({

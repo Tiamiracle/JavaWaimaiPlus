@@ -53,9 +53,9 @@
           </view>
           <view class="recommend-more">每日精选</view>
         </view>
-        <scroll-view class="recommend-scroll" scroll-x show-scrollbar="false">
+        <scroll-view class="recommend-scroll" scroll-x show-scrollbar="false" :scroll-with-animation="true">
           <view class="recommend-list">
-            <view class="recommend-item" v-for="dish in recommendList" :key="dish.id" @click="openDetailHandle(dish)">
+            <view class="recommend-item" v-for="dish in recommendList" :key="dish.id" @tap="openDetailHandle(dish)">
               <view class="recommend-img-wrap">
                 <image class="recommend-img" :src="dish.image" mode="aspectFill" />
               </view>
@@ -73,7 +73,12 @@
                     <text class="recommend-price-symbol">¥</text>
                     <text class="recommend-price">{{ Number(dish.price).toFixed(2) }}</text>
                   </view>
-                  <view class="recommend-add" @click.stop="addDishAction(dish, '普通')">
+                  <!-- 有口味数据时显示"选规格"按钮 -->
+                  <view class="recommend-btn-spec" v-if="dish.flavors && dish.flavors.length > 0" @tap.stop="openSpecPop(dish)">
+                    <text>选规格</text>
+                  </view>
+                  <!-- 无口味数据时显示"+"按钮 -->
+                  <view class="recommend-add" v-else @tap.stop="handleRecommendAdd(dish)">
                     <text class="add-icon">+</text>
                   </view>
                 </view>
@@ -134,7 +139,7 @@
           <view v-if="typeListData.length > 0">该分类下暂无菜品</view>
         </view>
       </view>
-      <view class="restaurant_close">店铺已打烊</view>
+      <view class="restaurant_close" v-if="shopStatus !== 1">店铺已打烊</view>
       <!-- end -->
       <view class="mask-box"></view>
       <!-- 底部去结算 -->
@@ -166,14 +171,14 @@
       </view>
       <!-- end -->
       <!-- 选择多规格弹层 - start -->
-      <view class="pop_mask" v-show="openMoreNormPop">
+      <view class="pop_mask" v-show="openMoreNormPop"@click.self="closeMoreNorm()">
         <popMask :moreNormDishdata="moreNormDishdata" :moreNormdata="moreNormdata" :flavorDataes="flavorDataes"
           @checkMoreNormPop="checkMoreNormPop" @addShop="addShop" @closeMoreNorm="closeMoreNorm"></popMask>
       </view>
       <!-- 选择多规格 - end -->
       <!-- 菜品详情弹层 - start -->
       <!-- openDetailHandle 这个函数触发的菜品详情 -->
-      <view class="pop_mask" v-show="openDetailPop" style="z-index: 9999">
+      <view class="pop_mask" v-show="openDetailPop" style="z-index: 9999"@click.self="dishClose()">
         <dishDetail :dishDetailes="dishDetailes" :openDetailPop="openDetailPop" :dishMealData="dishMealData"
           @redDishAction="redDishAction" @addDishAction="addDishAction" @moreNormDataesHandle="moreNormDataesHandle"
           @dishClose="dishClose"></dishDetail>
@@ -215,185 +220,3 @@
 </template>
 <script src="./index.js"></script>
 <style src="./style.scss" lang="scss" scoped></style>
-<style scoped>
-/* #ifdef MP-WEIXIN || APP-PLUS */
-::v-deep ::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  -webkit-appearance: none;
-  background: transparent;
-  color: transparent;
-}
-.recommend-section {
-  margin: 16rpx 20rpx;
-  padding: 24rpx 0 20rpx 24rpx;
-  background: linear-gradient(135deg, #fff9f5 0%, #ffffff 40%);
-  border-radius: 24rpx;
-  box-shadow: 0 4rpx 20rpx rgba(255, 90, 42, 0.08);
-}
-
-.recommend-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-right: 24rpx;
-  margin-bottom: 20rpx;
-}
-
-.recommend-title {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.title-icon {
-  font-size: 34rpx;
-}
-
-.title-text {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1a1a1a;
-}
-
-.title-sub {
-  font-size: 22rpx;
-  color: #999999;
-  margin-left: 8rpx;
-}
-
-.recommend-more {
-  font-size: 24rpx;
-  color: #ff5a2a;
-  font-weight: 500;
-}
-
-.recommend-scroll {
-  white-space: nowrap;
-}
-
-.recommend-list {
-  display: flex;
-  gap: 20rpx;
-  padding-right: 24rpx;
-}
-
-.recommend-item {
-  display: inline-block;
-  width: 240rpx;
-  background: #ffffff;
-  border-radius: 16rpx;
-  overflow: hidden;
-  flex-shrink: 0;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-}
-
-.recommend-img-wrap {
-  width: 240rpx;
-  height: 160rpx;
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-.recommend-img {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.recommend-info {
-  padding: 14rpx 14rpx 16rpx;
-}
-
-.recommend-name {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #1a1a1a;
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.recommend-sales-row {
-  margin-top: 4rpx;
-}
-
-.recommend-sales {
-  font-size: 20rpx;
-  color: #999999;
-}
-
-.recommend-reason {
-  display: flex;
-  align-items: flex-start;
-  gap: 4rpx;
-  margin: 8rpx 0;
-  padding: 8rpx 10rpx;
-  background: linear-gradient(90deg, #fff4ec 0%, #fff8f2 100%);
-  border-radius: 8rpx;
-  min-height: 56rpx;
-}
-
-.reason-icon {
-  font-size: 20rpx;
-  flex-shrink: 0;
-  line-height: 1.6;
-}
-
-.reason-text {
-  font-size: 20rpx;
-  color: #ff5a2a;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  word-break: break-all;
-  overflow: hidden;
-}
-
-.recommend-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6rpx;
-}
-
-.recommend-price-wrap {
-  display: flex;
-  align-items: baseline;
-}
-
-.recommend-price-symbol {
-  font-size: 22rpx;
-  font-weight: 600;
-  color: #ff5a2a;
-}
-
-.recommend-price {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #ff5a2a;
-}
-
-.recommend-add {
-  width: 44rpx;
-  height: 44rpx;
-  background: linear-gradient(135deg, #ff7a45 0%, #ff5a2a 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4rpx 10rpx rgba(255, 90, 42, 0.25);
-}
-
-.add-icon {
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: 600;
-  line-height: 1;
-  margin-top: -3rpx;
-}
-/* #endif */
-</style>

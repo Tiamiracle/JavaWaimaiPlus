@@ -49,33 +49,44 @@
         order by create_time desc
     </select>
 <!-- 冷   -->
-    <select id="recommendByCF" resultType="com.sky.vo.RecommendDishVO">
+    <select id="recommendBySales" resultType="com.sky.vo.RecommendDishVO">
         SELECT
-            d.*,
+            d.id,
+            d.name,
+            d.category_id,
+            d.price,
+            d.image,
+            d.description,
+            d.status,
             COALESCE((
                          SELECT SUM(od_all.number)
                          FROM order_detail od_all
                                   INNER JOIN orders o_all ON od_all.order_id = o_all.id
                          WHERE od_all.dish_id = d.id
-                           AND o_all.status = 5
+                           AND o_all.status = #{status}
                            AND o_all.order_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
                      ), 0) AS sales
         FROM dish d
-        WHERE d.status = 1
         ORDER BY sales DESC
             LIMIT #{limit}
     </select>
 <!--    协同过滤-->
-    <select id="recommendBySales" resultType="com.sky.vo.RecommendDishVO">
+    <select id="recommendByCF" resultType="com.sky.vo.RecommendDishVO">
         SELECT
-            d.*
+            d.id,
+            d.name,
+            d.category_id,
+            d.price,
+            d.image,
+            d.description,
+            d.status,
             COUNT(od2.dish_id) AS score,
             COALESCE((
                          SELECT SUM(od_all.number)
                          FROM order_detail od_all
                                   INNER JOIN orders o_all ON od_all.order_id = o_all.id
                          WHERE od_all.dish_id = d.id
-                           AND o_all.status = 5
+                           AND o_all.status = #{status}
                            AND o_all.order_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
                      ), 0) AS sales  -- 全平台总销量
         FROM dish d
@@ -91,13 +102,12 @@
                 FROM order_detail od3
                          INNER JOIN orders o3 ON od3.order_id = o3.id
                 WHERE o3.user_id = #{userId}
-                  AND o3.status = 5
+                  AND o3.status = #{status}
                 GROUP BY od3.dish_id
             )
               AND o.user_id != #{userId}
-          AND o.status = 5
+          AND o.status = #{status}
             )
-          AND d.status = 1
         GROUP BY d.id
         ORDER BY COUNT(od2.dish_id) DESC
             LIMIT #{limit}

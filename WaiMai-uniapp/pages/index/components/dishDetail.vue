@@ -2,17 +2,24 @@
 <template>
   <!-- 餐品详情 -->
   <view class="dish_detail_pop" v-if="dishDetailes.type == 1">
-    <image
-      mode="aspectFill"
-      class="div_big_image"
-      :src="dishDetailes.image"
-    ></image>
-    <view class="title">{{ dishDetailes.name }}</view>
-    <view class="desc">{{ dishDetailes.description }}</view>
+    <scroll-view class="dish_detail_scroll" scroll-y>
+      <image
+        mode="aspectFill"
+        class="div_big_image"
+        :src="dishDetailes.image"
+      ></image>
+      <view class="title">{{ dishDetailes.name }}</view>
+      <view class="desc" v-if="dishDetailes.description">{{ dishDetailes.description }}</view>
+      <view class="reason-box" v-if="dishDetailes.reason">
+        <text class="reason-label">💡 推荐理由</text>
+        <text class="reason-content">{{ dishDetailes.reason }}</text>
+      </view>
+      <view class="sales-row">月售 {{ dishDetailes.sales || 0 }}</view>
+    </scroll-view>
     <view class="but_item">
       <view class="price">
         <text class="ico">￥</text>
-        {{ dishDetailes.price.toFixed(2) }}
+        {{ Number(dishDetailes.price).toFixed(2) }}
       </view>
       <view
         class="active"
@@ -20,7 +27,7 @@
       >
         <image
           src="../../../static/btn_red.png"
-          @click="redDishAction(dishDetailes, '普通')"
+          @tap="redDishAction(dishDetailes, '普通')"
           class="dish_red"
           mode=""
         ></image>
@@ -28,13 +35,13 @@
         <image
           src="../../../static/btn_add.png"
           class="dish_add"
-          @click="addDishAction(dishDetailes, '普通')"
+          @tap="addDishAction(dishDetailes, '普通')"
           mode=""
         ></image>
       </view>
 
       <view class="active" v-if="dishDetailes.flavors.length > 0"
-        ><view class="dish_card_add" @click="moreNormDataesHandle(dishDetailes)"
+        ><view class="dish_card_add" @tap="moreNormDataesHandle(dishDetailes)"
           >选择规格</view
         ></view
       >
@@ -44,12 +51,12 @@
           dishDetailes.dishNumber === 0 && dishDetailes.flavors.length === 0
         "
       >
-        <view class="dish_card_add" @click="addDishAction(dishDetailes, '普通')"
+        <view class="dish_card_add" @tap="addDishAction(dishDetailes, '普通')"
           >加入购物车</view
         >
       </view>
     </view>
-    <view class="close" @click="dishClose"
+    <view class="close" @tap="dishClose"
       ><image
         class="close_img"
         src="../../../static/but_close.png"
@@ -85,7 +92,7 @@
       >
         <image
           src="../../../static/btn_red.png"
-          @click="redDishAction(dishDetailes, '普通')"
+          @tap="redDishAction(dishDetailes, '普通')"
           class="dish_red"
           mode=""
         ></image>
@@ -93,19 +100,19 @@
         <image
           src="../../../static/btn_add.png"
           class="dish_add"
-          @click="addDishAction(dishDetailes, '普通')"
+          @tap="addDishAction(dishDetailes, '普通')"
           mode=""
         ></image>
       </view>
       <view class="active" v-else-if="dishDetailes.dishNumber == 0"
         ><view
           class="dish_card_add"
-          @click="addDishAction(dishDetailes, '普通')"
+          @tap="addDishAction(dishDetailes, '普通')"
           >加入购物车</view
         ></view
       >
     </view>
-    <view class="close" @click="dishClose"
+    <view class="close" @tap="dishClose"
       ><image
         class="close_img"
         src="../../../static/but_close.png"
@@ -135,11 +142,10 @@ export default {
   methods: {
     // 加入购物车
     addDishAction(obj, item) {
-      console.log(obj, item);
-      this.$emit("addDishAction", { obj: obj, item: item });
+      this.$emit("addDishAction", obj, item);
     },
     redDishAction(obj, item) {
-      this.$emit("redDishAction", { obj: obj, item: item });
+      this.$emit("redDishAction", obj, item);
     },
     // 选择规格
     moreNormDataesHandle(obj) {
@@ -154,83 +160,144 @@ export default {
 </script>
 <style lang="scss" scoped>
 .dish_detail_pop {
-  width: calc(100vw - 160rpx);
+  width: calc(100vw - 120rpx);
+  max-height: 80vh;
   box-sizing: border-box;
-  position: relative;
+  position: fixed;
   top: 50%;
   left: 50%;
-  padding: 40rpx;
   transform: translateX(-50%) translateY(-50%);
   background: #fff;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 10001;
+
+  .dish_detail_scroll {
+    flex: 1;
+    min-height: 0;
+    padding: 32rpx 32rpx 16rpx;
+  }
+
   .div_big_image {
     width: 100%;
     height: 320rpx;
-    border-radius: 10rpx;
+    border-radius: 16rpx;
+    display: block;
   }
+
   .title {
-    font-size: 40rpx;
-    line-height: 80rpx;
-    text-align: center;
-    font-weight: bold;
+    font-size: 36rpx;
+    line-height: 60rpx;
+    text-align: left;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-top: 20rpx;
   }
+
+  .desc {
+    font-size: 26rpx;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 12rpx;
+  }
+
+  .reason-box {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16rpx;
+    padding: 16rpx 20rpx;
+    background: linear-gradient(90deg, #fff4ec 0%, #fff8f2 100%);
+    border-radius: 12rpx;
+  }
+
+  .reason-label {
+    font-size: 24rpx;
+    font-weight: 600;
+    color: #ff5a2a;
+    margin-bottom: 6rpx;
+  }
+
+  .reason-content {
+    font-size: 24rpx;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  .sales-row {
+    font-size: 22rpx;
+    color: #999;
+    margin-top: 12rpx;
+  }
+
   .dish_items {
-    height: 60vh;
+    flex: 1;
+    min-height: 0;
+    padding: 0 32rpx;
   }
+
   .but_item {
     display: flex;
     position: relative;
-    flex: 1;
+    align-items: center;
+    padding: 20rpx 32rpx;
+    border-top: 1rpx solid #f0f0f0;
+    background: #fff;
+    flex-shrink: 0;
     .price {
+      flex: 1;
       text-align: left;
       color: #e94e3c;
-      line-height: 88rpx;
-      box-sizing: border-box;
-      font-size: 48rpx;
-      font-weight: bold;
+      font-size: 44rpx;
+      font-weight: 700;
       .ico {
-        font-size: 28rpx;
+        font-size: 26rpx;
       }
     }
     .active {
-      position: absolute;
-      right: 0rpx;
-      bottom: 20rpx;
       display: flex;
+      align-items: center;
+      position: relative;
+      right: auto;
+      bottom: auto;
       .dish_add,
       .dish_red {
         display: block;
-        width: 72rpx;
-        height: 72rpx;
+        width: 64rpx;
+        height: 64rpx;
       }
       .dish_number {
-        padding: 0 10rpx;
-        line-height: 72rpx;
+        padding: 0 12rpx;
+        line-height: 64rpx;
         font-size: 30rpx;
         font-family: PingFangSC, PingFangSC-Medium;
         font-weight: 500;
+        color: #333;
       }
       .dish_card_add {
         width: 200rpx;
-        line-height: 60rpx;
+        height: 72rpx;
+        line-height: 72rpx;
         text-align: center;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 28rpx;
-        opacity: 1;
-        background: #ffc200;
-        border-radius: 30rpx;
+        color: #333;
+        background: linear-gradient(135deg, #ffc200 0%, #ffb302 100%);
+        border-radius: 36rpx;
+        box-shadow: 0 4rpx 12rpx rgba(255, 194, 0, 0.35);
       }
     }
   }
 }
 .close {
   position: absolute;
-  bottom: -180rpx;
+  bottom: -120rpx;
   left: 50%;
   transform: translateX(-50%);
   .close_img {
-    width: 88rpx;
-    height: 88rpx;
+    width: 80rpx;
+    height: 80rpx;
   }
 }
 </style>
