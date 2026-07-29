@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.OrderMapper">
+    <select id="page" resultType="com.sky.entity.Orders">
+        select * from orders
+        <where>
+            <if test="number != null and number != ''">
+                AND number = #{number}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="beginTime != null">
+                AND order_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                AND order_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY order_time DESC
+    </select>
+    <select id="userPage" resultType="com.sky.entity.Orders">
+        select * from orders
+        <where>
+            user_id = #{userId}
+            <if test="ordersPageQueryDTO.status != null">
+                AND status = #{ordersPageQueryDTO.status}
+            </if>
+        </where>
+        ORDER BY order_time DESC
+    </select>
+    <select id="getTop10" resultType="com.sky.dto.TopCountDTO">
+        select
+            od.name,
+            sum(od.number) as saleCount
+        from orders o
+            LEFT JOIN order_detail od on o.id=od.order_id
+        where o.status=5 and DATE(o.order_time) &gt;= #{beginDate} and DATE(o.order_time) &lt;= #{endDate}
+        GROUP BY od.name
+        ORDER BY saleCount desc
+            LIMIT 10
+    </select>
+    <select id="countByStatus" resultType="java.lang.Long">
+        select count(*) from orders
+        <where>
+            status = #{status}
+            <if test="date != null">
+                and DATE(order_time) = #{date}
+            </if>
+        </where>
+    </select>
+    <select id="getTurnoverStatistics" resultType="java.lang.Double">
+        select IFNULL(sum(amount), 0)
+        from orders
+        <where>
+            status = 5
+            <if test="begin != null">
+                and DATE(order_time) &gt;=  #{begin}
+            </if>
+            <if test="end != null">
+                and DATE(order_time) &lt;=  #{end}
+            </if>
+        </where>
+    </select>
+    <select id="getOrderList" resultType="com.sky.dto.OrderCountDTO">
+        select
+        ifnull(count(case when status=5 then id end),0) as validOrderCount,
+        ifnull(count(*),0) as orderCount
+        from orders
+        <where>
+            <if test="begin != null">
+                and DATE(order_time) &gt;=  #{begin}
+            </if>
+            <if test="end != null">
+                and DATE(order_time) &lt;=  #{end}
+            </if>
+        </where>
+    </select>
+    <update id="update">
+            UPDATE orders
+            SET status = #{status},
+                user_id = #{userId},
+                address_book_id = #{addressBookId},
+                order_time = #{orderTime},
+                checkout_time = #{checkoutTime},
+                pay_method = #{payMethod},
+                pay_status = #{payStatus},
+                amount = #{amount},
+                remark = #{remark},
+                phone = #{phone},
+                address = #{address},
+                user_name = #{userName},
+                consignee = #{consignee},
+                cancel_reason = #{cancelReason},
+                rejection_reason = #{rejectionReason},
+                cancel_time = #{cancelTime},
+                estimated_delivery_time = #{estimatedDeliveryTime},
+                delivery_status = #{deliveryStatus},
+                delivery_time = #{deliveryTime},
+                pack_amount = #{packAmount},
+                tableware_number = #{tablewareNumber},
+                tableware_status = #{tablewareStatus}
+        WHERE number = #{number} and user_id = #{userId}
+    </update>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (
+            number,
+            status,
+            user_id,
+            address_book_id,
+            order_time,
+            checkout_time,
+            pay_method,
+            pay_status,
+            amount,
+            remark,
+            phone,
+            address,
+            user_name,
+            consignee,
+            cancel_reason,
+            rejection_reason,
+            cancel_time,
+            estimated_delivery_time,
+            delivery_status,
+            delivery_time,
+            pack_amount,
+            tableware_number,
+            tableware_status,
+            delivery_fee
+        ) VALUES (
+                     #{number},
+                     #{status},
+                     #{userId},
+                     #{addressBookId},
+                     #{orderTime},
+                     #{checkoutTime},
+                     #{payMethod},
+                     #{payStatus},
+                     #{amount},
+                     #{remark},
+                     #{phone},
+                     #{address},
+                     #{userName},
+                     #{consignee},
+                     #{cancelReason},
+                     #{rejectionReason},
+                     #{cancelTime},
+                     #{estimatedDeliveryTime},
+                     #{deliveryStatus},
+                     #{deliveryTime},
+                     #{packAmount},
+                     #{tablewareNumber},
+                     #{tablewareStatus},
+                     #{deliveryFee}
+                 )
+    </insert>
+</mapper>

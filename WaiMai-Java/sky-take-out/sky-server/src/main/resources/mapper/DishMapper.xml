@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.DishMapper">
+    <select id="list" resultType="com.sky.vo.DishVO">
+        select d.*,COALESCE(f.sales,0) as sales FROM dish as d LEFT JOIN (select od.dish_id,sum(od.number)as sales from orders as o LEFT JOIN order_detail as od on o.id=od.order_id WHERE o.order_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) and o.`status`=5 GROUP BY od.dish_id)as f ON d.id=f.dish_id where d.category_id = #{categoryId}
+    </select>
+    <insert id="add" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        INSERT INTO dish (name, category_id, price,image,description, status,create_user, update_user) VALUES (#{name}, #{categoryId}, #{price},#{image},#{description}, #{status},#{createUser},#{updateUser})
+    </insert>
+    <update id="update">
+        UPDATE  dish
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="categoryId != null">
+                category_id = #{categoryId},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="image != null and image != ''">
+                image = #{image},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            update_user = #{updateUser},
+        </set>
+        WHERE id = #{id}
+    </update>
+    <select id="page" resultType="com.sky.vo.DishVO">
+        select d.*,c.name as categoryname from dish d LEFT JOIN  category c on d.category_id=c.id
+        <where>
+            <if test="name != null and name != ''">
+                d.name like concat('%',#{name},'%')
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and d.status = #{status}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+<!-- 冷   -->
+    <select id="recommendByCF" resultType="com.sky.vo.RecommendDishVO">
+        SELECT
+            d.*,
+            COALESCE((
+                         SELECT SUM(od_all.number)
+                         FROM order_detail od_all
+                                  INNER JOIN orders o_all ON od_all.order_id = o_all.id
+                         WHERE od_all.dish_id = d.id
+                           AND o_all.status = 5
+                           AND o_all.order_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                     ), 0) AS sales
+        FROM dish d
+        WHERE d.status = 1
+        ORDER BY sales DESC
+            LIMIT #{limit}
+    </select>
+<!--    协同过滤-->
+    <select id="recommendBySales" resultType="com.sky.vo.RecommendDishVO">
+        SELECT
+            d.*
+            COUNT(od2.dish_id) AS score,
+            COALESCE((
+                         SELECT SUM(od_all.number)
+                         FROM order_detail od_all
+                                  INNER JOIN orders o_all ON od_all.order_id = o_all.id
+                         WHERE od_all.dish_id = d.id
+                           AND o_all.status = 5
+                           AND o_all.order_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                     ), 0) AS sales  -- 全平台总销量
+        FROM dish d
+                 INNER JOIN order_detail od2 ON d.id = od2.dish_id
+                 INNER JOIN orders o2 ON od2.order_id = o2.id
+        WHERE o2.user_id IN (
+            -- 相似用户
+            SELECT DISTINCT o.user_id
+            FROM order_detail od
+                     INNER JOIN orders o ON od.order_id = o.id
+            WHERE od.dish_id IN (
+                SELECT od3.dish_id
+                FROM order_detail od3
+                         INNER JOIN orders o3 ON od3.order_id = o3.id
+                WHERE o3.user_id = #{userId}
+                  AND o3.status = 5
+                GROUP BY od3.dish_id
+            )
+              AND o.user_id != #{userId}
+          AND o.status = 5
+            )
+          AND d.status = 1
+        GROUP BY d.id
+        ORDER BY COUNT(od2.dish_id) DESC
+            LIMIT #{limit}
+    </select>
+
+</mapper>
