@@ -4,7 +4,7 @@ import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
-import org.springframework.beans.factory.annotation.Value;
+import com.sky.properties.AiProperties;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
@@ -12,11 +12,12 @@ import java.util.Arrays;
 //千文工具api生成推荐理由
 @Component
 public class QianwenAPI {
-    @Value("${qianwen.api-key}")
-    private String apiKey;
-    @Value("${qianwen.model.chat}")
-    private String model;
+    private final AiProperties aiProperties;
     private Generation generation;
+
+    public QianwenAPI(AiProperties aiProperties) {
+        this.aiProperties = aiProperties;
+    }
 
     @PostConstruct
     public void init() {
@@ -49,8 +50,8 @@ public class QianwenAPI {
                     .build();
 
             GenerationParam param = GenerationParam.builder()
-                    .model(model)
-                    .apiKey(apiKey)
+                    .model(this.aiProperties.getChatModel())
+                    .apiKey(this.aiProperties.getApiKey())
                     .messages(Arrays.asList(userMsg))
                     .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                     .build();

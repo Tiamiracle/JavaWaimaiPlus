@@ -60,6 +60,10 @@ aliyun:
     accessKeySecret: ${aliyun.oss.accessKeySecret}
     bucketName: ${aliyun.oss.bucketName}
 qianwen:
-  api-key: ${qianwen.apiKey}
-  model:
-    chat: qwen-plus
+  api-key: ${qianwen.api-key}
+  embedding-endpoint: ${qianwen.embedding-endpoint}
+  embedding-model: ${qianwen.embedding-model}
+  chat-endpoint: ${qianwen.chat-endpoint}
+  chat-model: ${qianwen.chat-model}
+  max-history: ${qianwen.max-history}
+  ttl: ${qianwen.ttl}

@@ -20,6 +20,7 @@
           :loadingText="loadingText" :recentOrdersList="recentOrdersList"></OrderList>
       </view>
     </view>
+    <chat-ai :is-shop-open="true"></chat-ai>
   </view>
 </template>
 

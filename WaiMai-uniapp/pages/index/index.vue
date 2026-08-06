@@ -216,6 +216,7 @@
       </view>
       <!-- end -->
     </view>
+    <chat-ai :is-shop-open="shopStatus === 1" @need-login="handleNeedLogin"></chat-ai>
   </view>
 </template>
 <script src="./index.js"></script>

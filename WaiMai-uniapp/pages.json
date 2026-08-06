@@ -102,7 +102,14 @@
         "enablePullDownRefresh": false,
         "navigationBarBackgroundColor": "#ffc200"
       }
-    }
+	},
+	{
+		"path": "pages/chat/chat",
+		"style": {
+			"navigationStyle": "custom",
+			"navigationBarTitleText": "智能助手"
+		}
+	}
     ],
   "globalStyle": {
     "navigationBarTextStyle": "white",

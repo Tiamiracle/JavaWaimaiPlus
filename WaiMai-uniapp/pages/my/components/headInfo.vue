@@ -65,7 +65,7 @@ export default {
 .my_info {
     height: 172rpx;
     width: 750rpx;
-    background-color: #ffc200;
+    background: linear-gradient(135deg, #ffd54f 0%, #ffc200 100%);
     display: flex;
     // 头像
     .head {

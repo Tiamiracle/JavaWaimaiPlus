@@ -108,6 +108,7 @@ export default {
 		loaddingSt: function () {
 			return this.lodding
 		},
+		
 		orderAndUserInfo: function () {
 			let orderData = []
 			Array.isArray(this.orderListDataes) &&
@@ -188,7 +189,10 @@ export default {
 					dishNumber: dish.dishNumber || 0
 				}))
 			}
-			console.log('推荐data',res);
+			console.log('推荐data', res);
+		},
+		handleNeedLogin() {
+			this.showAuthModal = true
 		},
 		// 推荐菜品直接加入购物车（无规格）
 		handleRecommendAdd(dish) {
@@ -603,7 +607,7 @@ export default {
 		},
 		// 打开菜品牌详情
 		openDetailHandle(item) {
-			if(!item.type){
+			if (!item.type) {
 				item.type = 1
 			}
 			this.dishDetailes = item

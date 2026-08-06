@@ -176,4 +176,43 @@ public class HttpClientUtil {
                 .setSocketTimeout(TIMEOUT_MSEC).build();
     }
 
+    private static RequestConfig builderRequestConfig(int timeoutMs) {
+        return RequestConfig.custom()
+                .setConnectTimeout(timeoutMs)
+                .setConnectionRequestTimeout(timeoutMs)
+                .setSocketTimeout(timeoutMs).build();
+    }
+
+    public static String doPostJsonRaw(String url, String jsonBody, Map<String, String> headers, int timeoutMs) throws IOException {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        CloseableHttpResponse response = null;
+        String resultString = "";
+        try {
+            HttpPost httpPost = new HttpPost(url);
+            if (jsonBody != null && !jsonBody.isEmpty()) {
+                StringEntity entity = new StringEntity(jsonBody, "utf-8");
+                entity.setContentEncoding("utf-8");
+                entity.setContentType("application/json");
+                httpPost.setEntity(entity);
+            }
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    httpPost.setHeader(header.getKey(), header.getValue());
+                }
+            }
+            httpPost.setConfig(builderRequestConfig(timeoutMs));
+            response = httpClient.execute(httpPost);
+            int statusCode = response.getStatusLine().getStatusCode();
+            resultString = EntityUtils.toString(response.getEntity(), "UTF-8");
+            if (statusCode != 200) {
+                throw new IOException("HTTP " + statusCode + ": " + resultString.substring(0, Math.min(300, resultString.length())));
+            }
+        } catch (Exception e) {
+            throw new IOException("AI API request failed: " + e.getMessage(), e);
+        } finally {
+            try { if (response != null) response.close(); } catch (IOException e) { e.printStackTrace(); }
+            try { httpClient.close(); } catch (IOException e) { e.printStackTrace(); }
+        }
+        return resultString;
+    }
 }
