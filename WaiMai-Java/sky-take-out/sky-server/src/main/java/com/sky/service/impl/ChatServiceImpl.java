@@ -86,16 +86,16 @@ public class ChatServiceImpl implements ChatService {
         //检索相关文档对象
         List<KnowledgeDoc> retrieved = retrieve(queryVec, RETRIEVE_TOP_K);
 
-        // 3.无匹配结果->存储记录
-        if (retrieved.isEmpty()) {
-            saveHistory(historyKey, history, question, FALLBACK_MSG);
-            List<String> tips = new ArrayList<>();
-            tips.add("推荐菜品");
-            tips.add("配送时间");
-            tips.add("如何退款");
-            tips.add("联系商家");
-            return new ChatResponseVO(FALLBACK_MSG, tips);
-        }
+//        // 3.无匹配结果->存储记录
+//        if (retrieved.isEmpty()) {
+//            saveHistory(historyKey, history, question, FALLBACK_MSG);
+//            List<String> tips = new ArrayList<>();
+//            tips.add("推荐菜品");
+//            tips.add("配送时间");
+//            tips.add("如何退款");
+//            tips.add("联系商家");
+//            return new ChatResponseVO(FALLBACK_MSG, tips);
+//        }
 
         // 4. 构建提示词调用ai
         String prompt = buildPrompt(retrieved, history, question);
@@ -250,6 +250,7 @@ public class ChatServiceImpl implements ChatService {
         StringBuilder sb = new StringBuilder();
         sb.append("你是「苍穹外卖」的智能客服助手-小苍。请仅根据以下知识库内容回答用户问题。\n");
         sb.append("如果知识库中没有相关信息，回复：\"").append(FALLBACK_MSG).append("\"。\n");
+        sb.append("⚠️当用户问闲聊类问题（你是谁、你叫什么等），直接正常回答，不要输出兜底话术。\n");
         sb.append("请用友好、简洁的语言回答（不超过150字）：\n\n");
 
         sb.append("【知识库内容】\n");
